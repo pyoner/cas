@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
-
 	interface UploadResult {
 		hash: string;
 		filename: string;
@@ -14,6 +12,7 @@
 	let error = $state<string | null>(null);
 	let fileExists = $state(false);
 	let checking = $state(false);
+	let computedHash = $state('');
 
 	const MAX_SIZE = 100 * 1024 * 1024;
 
@@ -37,7 +36,7 @@
 		result = null;
 
 		try {
-			const hash = await computeHash(file);
+			const hash = computedHash || (await computeHash(file));
 			const formData = new FormData();
 			formData.append('file', file);
 			formData.append('hash', hash);
@@ -73,6 +72,7 @@
 		result = null;
 		error = null;
 		fileExists = false;
+		computedHash = '';
 
 		if (file) {
 			checking = true;
@@ -80,6 +80,16 @@
 				try {
 					const res = await fetch(`/api/file?hash=${hash}`, { method: 'HEAD' });
 					fileExists = res.ok;
+					computedHash = hash;
+
+					if (fileExists) {
+						result = {
+							hash,
+							filename: file!.name,
+							existing: true,
+							url: `/api/file?hash=${hash}`
+						};
+					}
 				} catch {
 					fileExists = false;
 				} finally {
@@ -108,8 +118,8 @@
 			</p>
 		{/if}
 
-		<button onclick={handleUpload} disabled={!file || uploading}>
-			{uploading ? 'Uploading...' : 'Upload'}
+		<button onclick={handleUpload} disabled={!file || uploading || fileExists}>
+			{uploading ? 'Uploading...' : fileExists ? 'File exists' : 'Upload'}
 		</button>
 	</div>
 
