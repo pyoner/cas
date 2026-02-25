@@ -1,6 +1,5 @@
 <script lang="ts">
 	interface UploadResult {
-		url: string;
 		hash: string;
 		filename: string;
 		existing: boolean;
@@ -9,7 +8,7 @@
 
 	let file: File | null = $state(null);
 	let uploading = $state(false);
-	let result: UploadResult | null = $state(null);
+	let result: (UploadResult & { url: string }) | null = $state(null);
 	let error = $state<string | null>(null);
 
 	const MAX_SIZE = 100 * 1024 * 1024;
@@ -53,7 +52,10 @@
 				return;
 			}
 
-			result = data;
+			result = {
+				...data,
+				url: `/file/${data.hash}`
+			};
 		} catch (e) {
 			error = 'Upload failed. Please try again.';
 		} finally {

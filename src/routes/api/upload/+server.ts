@@ -40,9 +40,7 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 	const existing = await platform?.env.BUCKET.head(hash);
 
 	if (existing) {
-		const url = `https://pub-${hash}.r2.dev/${hash}`;
 		return json({
-			url,
 			hash,
 			filename,
 			contentType,
@@ -59,10 +57,7 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 		}
 	});
 
-	const url = `https://pub-${hash}.r2.dev/${hash}`;
-
 	return json({
-		url,
 		hash,
 		filename,
 		contentType,
