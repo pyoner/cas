@@ -19,7 +19,7 @@ export const HEAD: RequestHandler = async ({ url, platform }) => {
 
 	const headers = new Headers();
 	headers.set('Content-Type', existing.httpMetadata?.contentType || 'application/octet-stream');
-	headers.set('Content-Length', existing.size?.toString() || '');
+	headers.set('Content-Length', existing.size.toString());
 	headers.set('X-Filename', existing.customMetadata?.originalFilename || '');
 
 	return new Response(null, { status: 200, headers });
@@ -76,7 +76,9 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 
 	if (clientHash && clientHash !== serverHash) {
 		return json(
-			{ error: 'Invalid hash: client-side hash does not match server-computed hash' },
+			{
+				error: 'Invalid hash: client-side hash does not match server-computed hash'
+			},
 			{ status: 400 }
 		);
 	}
