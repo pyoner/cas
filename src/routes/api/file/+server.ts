@@ -1,4 +1,5 @@
 import { json, redirect } from '@sveltejs/kit';
+import { dev } from '$app/environment';
 import type { RequestHandler } from './$types';
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
@@ -45,6 +46,18 @@ export const GET: RequestHandler = async ({ url, platform }) => {
 		return json({ error: 'File not found' }, { status: 404 });
 	}
 
+	if (dev) {
+		const headers = new Headers();
+		headers.set('Content-Type', object.httpMetadata?.contentType || 'application/octet-stream');
+		headers.set('Content-Length', object.size.toString());
+		headers.set('Cache-Control', 'public, max-age=31536000, immutable');
+
+		return new Response(object.body, {
+			status: 200,
+			headers
+		});
+	}
+
 	const r2Url = (platform?.env as { R2_URL?: string }).R2_URL;
 	if (!r2Url) {
 		return json({ error: 'R2_URL not configured' }, { status: 500 });
@@ -74,7 +87,9 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 
 	if (clientHash && clientHash !== serverHash) {
 		return json(
-			{ error: 'Invalid hash: client-side hash does not match server-computed hash' },
+			{
+				error: 'Invalid hash: client-side hash does not match server-computed hash'
+			},
 			{ status: 400 }
 		);
 	}

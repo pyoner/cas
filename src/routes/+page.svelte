@@ -58,7 +58,7 @@
 
 			result = {
 				...data,
-				url: `/file/${data.hash}`
+				url: `/api/file?hash=${data.hash}`
 			};
 		} catch {
 			error = 'Upload failed. Please try again.';
@@ -123,11 +123,7 @@
 				{result.existing ? 'File already exists!' : 'Upload complete!'}
 			</p>
 			<p>Hash: {result.hash}</p>
-			<a
-				href={resolve('/file/[hash]', { hash: result.hash })}
-				target="_blank"
-				rel="noopener noreferrer"
-			>
+			<a href={result.url} target="_blank" rel="noopener noreferrer">
 				{result.url}
 			</a>
 			<button onclick={() => navigator.clipboard.writeText(result!.url)}> Copy Link </button>
