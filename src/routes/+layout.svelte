@@ -1,5 +1,6 @@
 <script lang="ts">
 	import favicon from '$lib/assets/favicon.svg';
+	import { resolve } from '$app/paths';
 	import '@picocss/pico/css/pico.min.css';
 
 	let { children } = $props();
@@ -43,8 +44,8 @@
 <header class="container">
 	<nav>
 		<ul>
-			<li><a href="/">Home</a></li>
-			<li><a href="/about">About</a></li>
+			<li><a href={resolve('/')}>Home</a></li>
+			<li><a href={resolve('/about')}>About</a></li>
 			<li>
 				<a href="https://github.com/pyoner/cas" target="_blank" rel="noopener noreferrer">GitHub</a>
 			</li>
