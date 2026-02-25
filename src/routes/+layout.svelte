@@ -2,39 +2,9 @@
 	import favicon from '$lib/assets/favicon.svg';
 	import { resolve } from '$app/paths';
 	import '@picocss/pico/css/pico.min.css';
+	import { theme } from '$lib/theme.svelte';
 
 	let { children } = $props();
-
-	let theme = $state('auto');
-
-	function toggleTheme() {
-		if (theme === 'auto') {
-			theme = 'light';
-		} else if (theme === 'light') {
-			theme = 'dark';
-		} else {
-			theme = 'light';
-		}
-		applyTheme();
-	}
-
-	function applyTheme() {
-		if (theme === 'auto') {
-			document.documentElement.removeAttribute('data-theme');
-			localStorage.removeItem('theme');
-		} else {
-			document.documentElement.setAttribute('data-theme', theme);
-			localStorage.setItem('theme', theme);
-		}
-	}
-
-	$effect(() => {
-		const saved = localStorage.getItem('theme');
-		if (saved === 'light' || saved === 'dark') {
-			theme = saved;
-			applyTheme();
-		}
-	});
 </script>
 
 <svelte:head>
@@ -50,10 +20,8 @@
 				<a href="https://github.com/pyoner/cas" target="_blank" rel="noopener noreferrer">GitHub</a>
 			</li>
 			<li style="margin-left: auto;">
-				<button onclick={toggleTheme} aria-label="Toggle theme">
-					{#if theme === 'auto'}
-						⚙️
-					{:else if theme === 'light'}
+				<button onclick={() => theme.toggle()} aria-label="Toggle theme">
+					{#if theme.value === 'light'}
 						☀️
 					{:else}
 						🌙
