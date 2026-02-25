@@ -1,6 +1,7 @@
 import { json, redirect } from '@sveltejs/kit';
 import { dev } from '$app/environment';
 import { computeHash, MAX_FILE_SIZE } from '$lib/hash';
+import type { UploadResult } from '$lib/types';
 import type { RequestHandler } from './$types';
 
 export const HEAD: RequestHandler = async ({ url, platform }) => {
@@ -84,7 +85,7 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 	const existing = await platform?.env.BUCKET.head(hash);
 
 	if (existing) {
-		return json({ hash, filename, existing: true });
+		return json({ hash, filename, existing: true } satisfies UploadResult);
 	}
 
 	await platform?.env.BUCKET.put(hash, buffer, {
@@ -92,5 +93,5 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 		customMetadata: { originalFilename: filename }
 	});
 
-	return json({ hash, filename, existing: false });
+	return json({ hash, filename, existing: false } satisfies UploadResult);
 };
