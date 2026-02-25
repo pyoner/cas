@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { resolve } from '$app/paths';
+	import { resolve } from '$app/paths';
 
 	interface UploadResult {
 		hash: string;
@@ -101,7 +101,11 @@
 				{result.existing ? 'File already exists!' : 'Upload complete!'}
 			</p>
 			<p>Hash: {result.hash}</p>
-			<a href={resolve('/file/[hash]', {hash: result.hash})} target="_blank" rel="noopener noreferrer">
+			<a
+				href={resolve('/file/[hash]', { hash: result.hash })}
+				target="_blank"
+				rel="noopener noreferrer"
+			>
 				{result.url}
 			</a>
 			<button onclick={() => navigator.clipboard.writeText(result!.url)}> Copy Link </button>
