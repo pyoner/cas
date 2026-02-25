@@ -40,7 +40,7 @@
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
-<header>
+<header class="container">
 	<nav>
 		<ul>
 			<li><a href="/">Home</a></li>
@@ -68,7 +68,7 @@
 	{@render children()}
 </main>
 
-<footer>
+<footer class="container">
 	<p>
 		&copy; 2026 <a href="https://github.com/pyoner/cas" target="_blank" rel="noopener noreferrer"
 			>GitHub</a
