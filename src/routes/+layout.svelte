@@ -44,7 +44,6 @@
 	<nav>
 		<ul>
 			<li><a href="/">Home</a></li>
-			<li><a href="/">Upload</a></li>
 			<li><a href="/about">About</a></li>
 			<li>
 				<a href="https://github.com/pyoner/cas" target="_blank" rel="noopener noreferrer">GitHub</a>
