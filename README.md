@@ -1,6 +1,18 @@
-# sv
+# Content Addressable Storage
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+A file storage service built with SvelteKit and Cloudflare R2 that uses SHA-256 hashing for content-addressable storage.
+
+## Features
+
+- Upload files and get shareable links
+- SHA-256 content addressing (same content = same hash)
+- File deduplication (identical files are stored once)
+- Preserves original filename and content type
+- 100MB file size limit
+
+## How it works
+
+Files are hashed using SHA-256. The hash becomes the storage key, enabling deduplication - if you upload the same file twice, you'll get the same shareable link.
 
 ## Creating a project
 
