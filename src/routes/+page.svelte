@@ -12,6 +12,8 @@
 	let uploading = $state(false);
 	let result: (UploadResult & { url: string }) | null = $state(null);
 	let error = $state<string | null>(null);
+	let fileExists = $state(false);
+	let checking = $state(false);
 
 	const MAX_SIZE = 100 * 1024 * 1024;
 
@@ -70,6 +72,22 @@
 		file = target.files?.[0] || null;
 		result = null;
 		error = null;
+		fileExists = false;
+
+		if (file) {
+			checking = true;
+			computeHash(file).then(async (hash) => {
+				try {
+					const res = await fetch(`/api/upload/check?hash=${hash}`);
+					const data: { exists: boolean } = await res.json();
+					fileExists = data.exists === true;
+				} catch {
+					fileExists = false;
+				} finally {
+					checking = false;
+				}
+			});
+		}
 	}
 </script>
 
@@ -83,6 +101,11 @@
 		{#if file}
 			<p class="file-info">
 				{file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
+				{#if checking}
+					<span class="checking">Checking...</span>
+				{:else if fileExists}
+					<span class="exists-warning">File already exists!</span>
+				{/if}
 			</p>
 		{/if}
 
@@ -139,6 +162,18 @@
 	.file-info {
 		font-size: 0.9rem;
 		color: #666;
+	}
+
+	.file-info .exists-warning {
+		color: #f59e0b;
+		font-weight: bold;
+		margin-left: 0.5rem;
+	}
+
+	.file-info .checking {
+		color: #666;
+		font-style: italic;
+		margin-left: 0.5rem;
 	}
 
 	button {
