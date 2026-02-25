@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { computeHash, MAX_FILE_SIZE } from '$lib/hash';
-	import type { UploadResultWithUrl } from '$lib/types';
+	import type { UploadResult, UploadResultWithUrl } from '$lib/types';
 
 	let file: File | null = $state(null);
 	let uploading = $state(false);
@@ -35,12 +35,7 @@
 				body: formData
 			});
 
-			const data = (await response.json()) as {
-				hash: string;
-				filename: string;
-				existing: boolean;
-				error?: string;
-			};
+			const data = (await response.json()) as UploadResult;
 
 			if (!response.ok) {
 				error = data.error || 'Upload failed';
