@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
 	import { computeHash, MAX_FILE_SIZE } from '$lib/hash';
 	import type { UploadResult, UploadResultWithUrl } from '$lib/types';
 
@@ -121,10 +120,11 @@
 				{result.existing ? 'File already exists!' : 'Upload complete!'}
 			</p>
 			<p>Hash: {result.hash}</p>
-			<a href={resolve('/api/file?hash=' + result.hash)} target="_blank" rel="noopener noreferrer">
+			<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
+			<a href={result.url} target="_blank" rel="noopener noreferrer">
 				{result.url}
 			</a>
-			<button onclick={() => navigator.clipboard.writeText(result!.url)}> Copy Link </button>
+			<button onclick={() => result && navigator.clipboard.writeText(result.url)}> Copy Link </button>
 		</div>
 	{/if}
 </section>
