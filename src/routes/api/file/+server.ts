@@ -1,14 +1,7 @@
 import { json, redirect } from '@sveltejs/kit';
 import { dev } from '$app/environment';
+import { computeHash, MAX_FILE_SIZE } from '$lib/hash';
 import type { RequestHandler } from './$types';
-
-const MAX_FILE_SIZE = 100 * 1024 * 1024;
-
-async function computeHash(buffer: ArrayBuffer): Promise<string> {
-	const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
-	const hashArray = Array.from(new Uint8Array(hashBuffer));
-	return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
-}
 
 export const HEAD: RequestHandler = async ({ url, platform }) => {
 	const hash = url.searchParams.get('hash');
@@ -23,14 +16,12 @@ export const HEAD: RequestHandler = async ({ url, platform }) => {
 		return new Response(null, { status: 404 });
 	}
 
-	return new Response(null, {
-		status: 200,
-		headers: {
-			'Content-Type': existing.httpMetadata?.contentType || 'application/octet-stream',
-			'Content-Length': existing.size?.toString() || '',
-			'X-Filename': existing.customMetadata?.originalFilename || ''
-		}
-	});
+	const headers = new Headers();
+	headers.set('Content-Type', existing.httpMetadata?.contentType || 'application/octet-stream');
+	headers.set('Content-Length', existing.size?.toString() || '');
+	headers.set('X-Filename', existing.customMetadata?.originalFilename || '');
+
+	return new Response(null, { status: 200, headers });
 };
 
 export const GET: RequestHandler = async ({ url, platform }) => {
@@ -52,10 +43,7 @@ export const GET: RequestHandler = async ({ url, platform }) => {
 		headers.set('Content-Length', object.size.toString());
 		headers.set('Cache-Control', 'public, max-age=31536000, immutable');
 
-		return new Response(object.body, {
-			status: 200,
-			headers
-		});
+		return new Response(object.body, { status: 200, headers });
 	}
 
 	const r2Url = (platform?.env as { R2_URL?: string }).R2_URL;
@@ -87,37 +75,22 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 
 	if (clientHash && clientHash !== serverHash) {
 		return json(
-			{
-				error: 'Invalid hash: client-side hash does not match server-computed hash'
-			},
+			{ error: 'Invalid hash: client-side hash does not match server-computed hash' },
 			{ status: 400 }
 		);
 	}
 
 	const hash = serverHash;
-
 	const existing = await platform?.env.BUCKET.head(hash);
 
 	if (existing) {
-		return json({
-			hash,
-			filename,
-			existing: true
-		});
+		return json({ hash, filename, existing: true });
 	}
 
 	await platform?.env.BUCKET.put(hash, buffer, {
-		httpMetadata: {
-			contentType
-		},
-		customMetadata: {
-			originalFilename: filename
-		}
+		httpMetadata: { contentType },
+		customMetadata: { originalFilename: filename }
 	});
 
-	return json({
-		hash,
-		filename,
-		existing: false
-	});
+	return json({ hash, filename, existing: false });
 };

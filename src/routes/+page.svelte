@@ -1,32 +1,19 @@
 <script lang="ts">
-	interface UploadResult {
-		hash: string;
-		filename: string;
-		existing: boolean;
-		error?: string;
-	}
+	import { computeHash, MAX_FILE_SIZE } from '$lib/hash';
+	import type { UploadResultWithUrl } from '$lib/types';
 
 	let file: File | null = $state(null);
 	let uploading = $state(false);
-	let result: (UploadResult & { url: string }) | null = $state(null);
+	let result: UploadResultWithUrl | null = $state(null);
 	let error = $state<string | null>(null);
 	let fileExists = $state(false);
 	let checking = $state(false);
 	let computedHash = $state('');
 
-	const MAX_SIZE = 100 * 1024 * 1024;
-
-	async function computeHash(file: File): Promise<string> {
-		const buffer = await file.arrayBuffer();
-		const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
-		const hashArray = Array.from(new Uint8Array(hashBuffer));
-		return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
-	}
-
 	async function handleUpload() {
 		if (!file) return;
 
-		if (file.size > MAX_SIZE) {
+		if (file.size > MAX_FILE_SIZE) {
 			error = 'File too large. Maximum size is 100MB';
 			return;
 		}
@@ -36,7 +23,7 @@
 		result = null;
 
 		try {
-			const hash = computedHash || (await computeHash(file));
+			const hash = computedHash || (await computeHash(await file.arrayBuffer()));
 			const formData = new FormData();
 			formData.append('file', file);
 			formData.append('hash', hash);
@@ -48,7 +35,12 @@
 				body: formData
 			});
 
-			const data: UploadResult = await response.json();
+			const data = (await response.json()) as {
+				hash: string;
+				filename: string;
+				existing: boolean;
+				error?: string;
+			};
 
 			if (!response.ok) {
 				error = data.error || 'Upload failed';
@@ -66,7 +58,7 @@
 		}
 	}
 
-	function handleFileChange(e: Event) {
+	async function handleFileChange(e: Event) {
 		const target = e.target as HTMLInputElement;
 		file = target.files?.[0] || null;
 		result = null;
@@ -76,26 +68,26 @@
 
 		if (file) {
 			checking = true;
-			computeHash(file).then(async (hash) => {
-				try {
-					const res = await fetch(`/api/file?hash=${hash}`, { method: 'HEAD' });
-					fileExists = res.ok;
-					computedHash = hash;
+			const hash = await computeHash(await file.arrayBuffer());
+			computedHash = hash;
 
-					if (fileExists) {
-						result = {
-							hash,
-							filename: file!.name,
-							existing: true,
-							url: `/api/file?hash=${hash}`
-						};
-					}
-				} catch {
-					fileExists = false;
-				} finally {
-					checking = false;
+			try {
+				const res = await fetch(`/api/file?hash=${hash}`, { method: 'HEAD' });
+				fileExists = res.ok;
+
+				if (fileExists) {
+					result = {
+						hash,
+						filename: file.name,
+						existing: true,
+						url: `/api/file?hash=${hash}`
+					};
 				}
-			});
+			} catch {
+				fileExists = false;
+			} finally {
+				checking = false;
+			}
 		}
 	}
 </script>
