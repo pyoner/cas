@@ -56,7 +56,7 @@
 				...data,
 				url: `/file/${data.hash}`
 			};
-		} catch (e) {
+		} catch {
 			error = 'Upload failed. Please try again.';
 		} finally {
 			uploading = false;
