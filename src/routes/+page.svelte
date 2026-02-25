@@ -87,20 +87,20 @@
 	}
 </script>
 
-<main>
+<section>
 	<h1>Content Addressable Storage</h1>
 	<p>Upload files to Cloudflare R2 and get shareable links.</p>
 
-	<div class="upload-form">
+	<div>
 		<input type="file" onchange={handleFileChange} accept="*/*" />
 
 		{#if file}
-			<p class="file-info">
+			<p>
 				{file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
 				{#if checking}
-					<span class="checking">Checking...</span>
+					<span>Checking...</span>
 				{:else if fileExists}
-					<span class="exists-warning">File already exists!</span>
+					<span>File already exists!</span>
 				{/if}
 			</p>
 		{/if}
@@ -111,12 +111,12 @@
 	</div>
 
 	{#if error}
-		<p class="error">{error}</p>
+		<p>{error}</p>
 	{/if}
 
 	{#if result}
-		<div class="result">
-			<p class="success">
+		<div>
+			<p>
 				{result.existing ? 'File already exists!' : 'Upload complete!'}
 			</p>
 			<p>Hash: {result.hash}</p>
@@ -126,82 +126,4 @@
 			<button onclick={() => navigator.clipboard.writeText(result!.url)}> Copy Link </button>
 		</div>
 	{/if}
-</main>
-
-<style>
-	main {
-		max-width: 600px;
-		margin: 0 auto;
-		padding: 2rem;
-		font-family: system-ui, sans-serif;
-	}
-
-	h1 {
-		margin-bottom: 0.5rem;
-	}
-
-	.upload-form {
-		display: flex;
-		flex-direction: column;
-		gap: 1rem;
-		margin: 2rem 0;
-	}
-
-	input[type='file'] {
-		padding: 0.5rem;
-	}
-
-	.file-info {
-		font-size: 0.9rem;
-		color: #666;
-	}
-
-	.file-info .exists-warning {
-		color: #f59e0b;
-		font-weight: bold;
-		margin-left: 0.5rem;
-	}
-
-	.file-info .checking {
-		color: #666;
-		font-style: italic;
-		margin-left: 0.5rem;
-	}
-
-	button {
-		padding: 0.75rem 1.5rem;
-		background: #0070f3;
-		color: white;
-		border: none;
-		border-radius: 4px;
-		cursor: pointer;
-		font-size: 1rem;
-	}
-
-	button:disabled {
-		background: #ccc;
-		cursor: not-allowed;
-	}
-
-	.error {
-		color: #dc2626;
-	}
-
-	.success {
-		color: #16a34a;
-		font-weight: bold;
-	}
-
-	.result {
-		margin-top: 2rem;
-		padding: 1rem;
-		background: #f5f5f5;
-		border-radius: 8px;
-	}
-
-	.result a {
-		display: block;
-		margin: 1rem 0;
-		word-break: break-all;
-	}
-</style>
+</section>
