@@ -124,7 +124,9 @@
 			<a href={result.url} target="_blank" rel="noopener noreferrer">
 				{result.url}
 			</a>
-			<button onclick={() => result && navigator.clipboard.writeText(result.url)}> Copy Link </button>
+			<button onclick={() => result && navigator.clipboard.writeText(result.url)}>
+				Copy Link
+			</button>
 		</div>
 	{/if}
 </section>

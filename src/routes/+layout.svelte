@@ -13,7 +13,7 @@
 		} else if (theme === 'light') {
 			theme = 'dark';
 		} else {
-			theme = 'auto';
+			theme = 'light';
 		}
 		applyTheme();
 	}
@@ -52,11 +52,11 @@
 			<li style="margin-left: auto;">
 				<button onclick={toggleTheme} aria-label="Toggle theme">
 					{#if theme === 'auto'}
-						🌙
+						⚙️
 					{:else if theme === 'light'}
-						🌙
-					{:else}
 						☀️
+					{:else}
+						🌙
 					{/if}
 				</button>
 			</li>
