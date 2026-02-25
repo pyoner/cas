@@ -1,4 +1,4 @@
-import { json } from '@sveltejs/kit';
+import { json, redirect } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
@@ -8,6 +8,50 @@ async function computeHash(buffer: ArrayBuffer): Promise<string> {
 	const hashArray = Array.from(new Uint8Array(hashBuffer));
 	return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
 }
+
+export const HEAD: RequestHandler = async ({ url, platform }) => {
+	const hash = url.searchParams.get('hash');
+
+	if (!hash) {
+		return json({ error: 'Missing hash parameter' }, { status: 400 });
+	}
+
+	const existing = await platform?.env.BUCKET.head(hash);
+
+	if (!existing) {
+		return new Response(null, { status: 404 });
+	}
+
+	return new Response(null, {
+		status: 200,
+		headers: {
+			'Content-Type': existing.httpMetadata?.contentType || 'application/octet-stream',
+			'Content-Length': existing.size?.toString() || '',
+			'X-Filename': existing.customMetadata?.originalFilename || ''
+		}
+	});
+};
+
+export const GET: RequestHandler = async ({ url, platform }) => {
+	const hash = url.searchParams.get('hash');
+
+	if (!hash) {
+		return json({ error: 'Missing hash parameter' }, { status: 400 });
+	}
+
+	const object = await platform?.env.BUCKET.get(hash);
+
+	if (!object) {
+		return json({ error: 'File not found' }, { status: 404 });
+	}
+
+	const r2Url = (platform?.env as { R2_URL?: string }).R2_URL;
+	if (!r2Url) {
+		return json({ error: 'R2_URL not configured' }, { status: 500 });
+	}
+
+	throw redirect(302, `${r2Url}/${hash}`);
+};
 
 export const POST: RequestHandler = async ({ request, platform }) => {
 	const formData = await request.formData();
@@ -43,7 +87,6 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 		return json({
 			hash,
 			filename,
-			contentType,
 			existing: true
 		});
 	}
@@ -60,7 +103,6 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 	return json({
 		hash,
 		filename,
-		contentType,
 		existing: false
 	});
 };

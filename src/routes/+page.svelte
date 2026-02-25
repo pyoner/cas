@@ -44,7 +44,7 @@
 			formData.append('filename', file.name);
 			formData.append('contentType', file.type || 'application/octet-stream');
 
-			const response = await fetch('/api/upload', {
+			const response = await fetch('/api/file', {
 				method: 'POST',
 				body: formData
 			});
@@ -78,9 +78,8 @@
 			checking = true;
 			computeHash(file).then(async (hash) => {
 				try {
-					const res = await fetch(`/api/upload/check?hash=${hash}`);
-					const data: { exists: boolean } = await res.json();
-					fileExists = data.exists === true;
+					const res = await fetch(`/api/file?hash=${hash}`, { method: 'HEAD' });
+					fileExists = res.ok;
 				} catch {
 					fileExists = false;
 				} finally {
