@@ -2,7 +2,7 @@
 	import logo from '$lib/assets/logo.svg';
 	import { resolve } from '$app/paths';
 	import '@picocss/pico/css/pico.min.css';
-	import { theme } from '$lib/theme.svelte';
+	import { ThemeToggle } from '$lib/components';
 
 	let { children } = $props();
 </script>
@@ -33,20 +33,7 @@
 				<a href="https://github.com/pyoner/cas" target="_blank" rel="noopener noreferrer">GitHub</a>
 			</li>
 			<li>
-				<a
-					href="#theme"
-					onclick={(e) => {
-						e.preventDefault();
-						theme.toggle();
-					}}
-					aria-label="Toggle theme"
-				>
-					{#if theme.value === 'light'}
-						☀️
-					{:else}
-						🌙
-					{/if}
-				</a>
+				<ThemeToggle />
 			</li>
 		</ul>
 	</nav>
@@ -73,9 +60,5 @@
 
 	footer {
 		margin-top: auto;
-	}
-
-	nav a[href='#theme'] {
-		text-decoration: none;
 	}
 </style>
