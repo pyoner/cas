@@ -97,6 +97,9 @@ export function createUploader() {
 				status = 'ready';
 			}
 		} catch {
+			// The HEAD request is an optimization check, not strictly required.
+			// If it fails (e.g. network error), allow upload anyway - the server
+			// will handle duplicates via hash comparison during POST.
 			status = 'ready';
 		}
 	}
