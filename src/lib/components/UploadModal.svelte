@@ -1,12 +1,16 @@
 <script lang="ts">
-	import { createUploader } from '$lib/uploader.svelte';
+	import type { createUploader } from '$lib/uploader.svelte';
 	import Dropzone from './Dropzone.svelte';
 	import SuccessCard from './SuccessCard.svelte';
 	import ErrorCard from './ErrorCard.svelte';
 
-	let { open = $bindable(false) } = $props<{ open: boolean }>();
-
-	const uploader = createUploader();
+	let {
+		open = $bindable(false),
+		uploader
+	}: {
+		open: boolean;
+		uploader: ReturnType<typeof createUploader>;
+	} = $props();
 
 	function handleClose() {
 		open = false;

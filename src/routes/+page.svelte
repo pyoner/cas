@@ -1,40 +1,56 @@
 <script lang="ts">
 	import { createUploader } from '$lib/uploader.svelte';
-	import { Dropzone, SuccessCard, ErrorCard, Features, Hero, UploadModal } from '$lib/components';
+	import { Dropzone, Features, Hero, UploadModal } from '$lib/components';
 
 	const uploader = createUploader();
 	let isModalOpen = $state(false);
+
+	function handleFileChange(file: File | null) {
+		if (file) {
+			uploader.processFile(file);
+			isModalOpen = true;
+		}
+	}
 </script>
 
-<Hero>
-	<button onclick={() => (isModalOpen = true)}>Open Upload Modal</button>
-</Hero>
+<Hero />
 
-<UploadModal bind:open={isModalOpen} />
+<UploadModal bind:open={isModalOpen} {uploader} />
 
 <section id="upload">
-	{#if uploader.status === 'idle' || uploader.status === 'checking' || uploader.status === 'ready' || uploader.status === 'uploading' || (uploader.status === 'error' && !uploader.result)}
+	{#if uploader.status === 'idle'}
 		<Dropzone
 			status={uploader.status}
 			file={uploader.file}
 			previewUrl={uploader.previewUrl}
-			onFileChange={(file) => uploader.processFile(file)}
+			onFileChange={handleFileChange}
 			onReset={() => uploader.reset()}
 			onUpload={() => uploader.upload()}
 		/>
-	{/if}
-
-	{#if uploader.status === 'error'}
-		<ErrorCard
-			message={uploader.errorMessage}
-			showReset={!uploader.file}
-			onReset={() => uploader.reset()}
-		/>
-	{/if}
-
-	{#if uploader.status === 'success' && uploader.result}
-		<SuccessCard result={uploader.result} onReset={() => uploader.reset()} />
+	{:else}
+		<div class="upload-trigger">
+			<button class="outline" onclick={() => (isModalOpen = true)}>
+				{uploader.status === 'success' ? 'View Uploaded File' : 'Continue Upload'}
+			</button>
+			<button class="outline secondary" onclick={() => uploader.reset()}>
+				Reset and Upload New
+			</button>
+		</div>
 	{/if}
 </section>
 
 <Features />
+
+<style>
+	.upload-trigger {
+		display: flex;
+		justify-content: center;
+		gap: 1rem;
+		margin-bottom: var(--pico-spacing);
+	}
+
+	.upload-trigger button {
+		width: auto;
+		margin-bottom: 0;
+	}
+</style>
