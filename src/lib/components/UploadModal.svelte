@@ -30,7 +30,8 @@
 <dialog {open}>
 	<article>
 		<header>
-			<button aria-label="Close" rel="prev" onclick={handleClose}></button>
+			<button aria-label="Close" onclick={handleClose} disabled={uploader.status === 'uploading'}
+			></button>
 			<p>
 				<strong>
 					{#if uploader.status === 'success' && uploader.result}
@@ -132,7 +133,11 @@
 					{copied ? '✅ Copied!' : 'Copy Link'}
 				</button>
 			{/if}
-			<button class="secondary outline" onclick={handleClose}>Close</button>
+			<button
+				class="secondary outline"
+				onclick={handleClose}
+				disabled={uploader.status === 'uploading'}>Close</button
+			>
 		</footer>
 	</article>
 </dialog>
