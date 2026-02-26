@@ -123,9 +123,6 @@
 		</div>
 
 		<footer>
-			{#if uploader.status === 'error'}
-				<button class="outline" onclick={() => uploader.reset()}>Try Again</button>
-			{/if}
 			{#if uploader.status === 'success' && uploader.result}
 				<button onclick={copyLink} class={copied ? 'success-button' : 'outline'}>
 					{copied ? '✅ Copied!' : 'Copy Link'}
