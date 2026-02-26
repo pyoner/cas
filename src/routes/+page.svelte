@@ -18,19 +18,19 @@
 <UploadModal bind:open={isModalOpen} {uploader} />
 
 <section id="upload">
-	{#if uploader.status === 'idle'}
-		<Dropzone
-			status={uploader.status}
-			file={uploader.file}
-			previewUrl={uploader.previewUrl}
-			onFileChange={handleFileChange}
-			onReset={() => uploader.reset()}
-			onUpload={() => uploader.upload()}
-		/>
-	{:else}
+	<Dropzone
+		status={uploader.status}
+		file={uploader.file}
+		previewUrl={uploader.previewUrl}
+		onFileChange={handleFileChange}
+		onReset={() => uploader.reset()}
+		onUpload={() => uploader.upload()}
+	/>
+
+	{#if uploader.status !== 'idle'}
 		<div class="upload-trigger">
 			<button class="outline" onclick={() => (isModalOpen = true)}>
-				{uploader.status === 'success' ? 'View Uploaded File' : 'Continue Upload'}
+				{uploader.status === 'success' ? 'View Result' : 'Continue Upload'}
 			</button>
 			<button class="outline secondary" onclick={() => uploader.reset()}>
 				Reset and Upload New
