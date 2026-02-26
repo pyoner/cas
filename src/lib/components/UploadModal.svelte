@@ -30,7 +30,7 @@
 <dialog {open}>
 	<article>
 		<header>
-			<button aria-label="Close" onclick={handleClose}></button>
+			<button aria-label="Close" rel="prev" onclick={handleClose}></button>
 			<p>
 				<strong>
 					{#if uploader.status === 'success' && uploader.result}
@@ -83,10 +83,6 @@
 					<progress></progress>
 					<small>Uploading...</small>
 				{/if}
-
-				{#if uploader.status === 'ready'}
-					<button onclick={() => uploader.upload()}>Upload File</button>
-				{/if}
 			{/if}
 
 			{#if uploader.status === 'error'}
@@ -107,7 +103,6 @@
 							).toString()}
 							readonly
 						/>
-						<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
 						<a
 							href={uploader.result.url}
 							target="_blank"
@@ -123,6 +118,15 @@
 		</div>
 
 		<footer>
+			{#if uploader.status === 'ready' || uploader.status === 'uploading'}
+				<button
+					onclick={() => uploader.upload()}
+					disabled={uploader.status === 'uploading'}
+					aria-busy={uploader.status === 'uploading' ? 'true' : 'false'}
+				>
+					{uploader.status === 'uploading' ? 'Uploading...' : 'Upload File'}
+				</button>
+			{/if}
 			{#if uploader.status === 'success' && uploader.result}
 				<button onclick={copyLink} class={copied ? 'success-button' : 'outline'}>
 					{copied ? '✅ Copied!' : 'Copy Link'}
