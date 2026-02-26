@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="100%" height="100%">
+  <title>CAS Logo (Monochrome)</title>
+  
+  <g stroke="currentColor" stroke-width="16" stroke-linejoin="round" stroke-linecap="round" fill="none">
+    <path d="M128 48 L56 88 L56 168 L128 208 L200 168 L200 88 Z"/>
+    <path d="M56 88 L128 128 L200 88"/>
+    <path d="M128 128 L128 208"/>
+  </g>
+  
+  <g fill="currentColor">
+    <circle cx="128" cy="128" r="16"/>
+    <circle cx="128" cy="48" r="12"/>
+    <circle cx="56" cy="88" r="12"/>
+    <circle cx="200" cy="88" r="12"/>
+    <circle cx="56" cy="168" r="12"/>
+    <circle cx="200" cy="168" r="12"/>
+    <circle cx="128" cy="208" r="12"/>
+  </g>
+</svg>

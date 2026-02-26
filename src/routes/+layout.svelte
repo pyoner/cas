@@ -1,5 +1,6 @@
 <script lang="ts">
 	import favicon from '$lib/assets/favicon.svg';
+	import logo from '$lib/assets/logo.svg';
 	import { resolve } from '$app/paths';
 	import '@picocss/pico/css/pico.min.css';
 	import { theme } from '$lib/theme.svelte';
@@ -16,12 +17,23 @@
 <header class="container">
 	<nav>
 		<ul>
+			<li>
+				<a
+					href={resolve('/')}
+					style="display: flex; align-items: center; gap: 0.5rem; text-decoration: none;"
+				>
+					<img src={logo} alt="CAS Logo" width="32" height="32" />
+					<strong>CAS</strong>
+				</a>
+			</li>
+		</ul>
+		<ul>
 			<li><a href={resolve('/')}>Home</a></li>
 			<li><a href={resolve('/about')}>About</a></li>
 			<li>
 				<a href="https://github.com/pyoner/cas" target="_blank" rel="noopener noreferrer">GitHub</a>
 			</li>
-			<li style="margin-left: auto;">
+			<li>
 				<a
 					href="#theme"
 					onclick={(e) => {
