@@ -9,6 +9,8 @@
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
+	<title>Content Addressable Storage | CAS</title>
+	<meta name="description" content="Secure and Fast File Storage Built on Cloudflare R2." />
 </svelte:head>
 
 <header class="container">

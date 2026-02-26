@@ -1,5 +1,7 @@
 # Content Addressable Storage
 
+Secure and Fast File Storage Built on Cloudflare R2.
+
 A file storage service built with SvelteKit and Cloudflare R2 that uses SHA-256 hashing for content-addressable storage.
 
 ## Features

@@ -8,7 +8,7 @@
 <section>
 	<hgroup>
 		<h1>Content Addressable Storage</h1>
-		<p>Upload files to Cloudflare R2 and get shareable links.</p>
+		<p>Secure and Fast File Storage Built on Cloudflare R2.</p>
 	</hgroup>
 
 	{#if uploader.status === 'idle' || uploader.status === 'checking' || uploader.status === 'ready' || uploader.status === 'uploading' || (uploader.status === 'error' && !uploader.result)}
