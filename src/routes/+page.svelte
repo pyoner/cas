@@ -1,13 +1,40 @@
 <script lang="ts">
-	import { Features, Hero, UploadModal } from '$lib/components';
+	import { createUploader } from '$lib/uploader.svelte';
+	import { Dropzone, SuccessCard, ErrorCard, Features, Hero, UploadModal } from '$lib/components';
 
+	const uploader = createUploader();
 	let isModalOpen = $state(false);
 </script>
 
 <Hero>
-	<button onclick={() => (isModalOpen = true)}>Start Uploading</button>
+	<button onclick={() => (isModalOpen = true)}>Open Upload Modal</button>
 </Hero>
 
 <UploadModal bind:open={isModalOpen} />
+
+<section id="upload">
+	{#if uploader.status === 'idle' || uploader.status === 'checking' || uploader.status === 'ready' || uploader.status === 'uploading' || (uploader.status === 'error' && !uploader.result)}
+		<Dropzone
+			status={uploader.status}
+			file={uploader.file}
+			previewUrl={uploader.previewUrl}
+			onFileChange={(file) => uploader.processFile(file)}
+			onReset={() => uploader.reset()}
+			onUpload={() => uploader.upload()}
+		/>
+	{/if}
+
+	{#if uploader.status === 'error'}
+		<ErrorCard
+			message={uploader.errorMessage}
+			showReset={!uploader.file}
+			onReset={() => uploader.reset()}
+		/>
+	{/if}
+
+	{#if uploader.status === 'success' && uploader.result}
+		<SuccessCard result={uploader.result} onReset={() => uploader.reset()} />
+	{/if}
+</section>
 
 <Features />
