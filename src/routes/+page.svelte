@@ -1,16 +1,13 @@
 <script lang="ts">
 	import { createUploader } from '$lib/uploader.svelte';
-	import { Dropzone, SuccessCard, ErrorCard, Features } from '$lib/components';
+	import { Dropzone, SuccessCard, ErrorCard, Features, Hero } from '$lib/components';
 
 	const uploader = createUploader();
 </script>
 
-<section>
-	<hgroup>
-		<h1>Content Addressable Storage</h1>
-		<p>Secure and Fast File Storage Built on Cloudflare R2.</p>
-	</hgroup>
+<Hero />
 
+<section>
 	{#if uploader.status === 'idle' || uploader.status === 'checking' || uploader.status === 'ready' || uploader.status === 'uploading' || (uploader.status === 'error' && !uploader.result)}
 		<Dropzone
 			status={uploader.status}
