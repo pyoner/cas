@@ -108,6 +108,7 @@
 							).toString()}
 							readonly
 						/>
+						<!-- eslint-disable svelte/no-navigation-without-resolve -->
 						<a
 							href={uploader.result.url}
 							target="_blank"
@@ -117,6 +118,7 @@
 						>
 							Open
 						</a>
+						<!-- eslint-enable svelte/no-navigation-without-resolve -->
 					</div>
 				</div>
 			{/if}
@@ -177,6 +179,13 @@
 		flex: 1;
 		display: flex;
 		flex-direction: column;
+		min-width: 0;
+	}
+
+	.file-info strong {
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
 	.error-content p {
