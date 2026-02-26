@@ -65,7 +65,6 @@
 
 			{#if uploader.status === 'success' && uploader.result}
 				<div class="result-details">
-					<p><strong>Hash:</strong> <code>{uploader.result.hash}</code></p>
 					<p><strong>Link:</strong></p>
 					<div class="link-group">
 						<input
@@ -86,9 +85,6 @@
 						>
 							Open
 						</a>
-						<button onclick={copyLink} class={copied ? 'success-button' : ''}>
-							{copied ? '✅ Copied!' : 'Copy'}
-						</button>
 					</div>
 				</div>
 			{/if}
@@ -99,7 +95,9 @@
 				<button class="outline" onclick={() => uploader.reset()}>Try Again</button>
 			{/if}
 			{#if uploader.status === 'success' && uploader.result}
-				<button class="outline" onclick={() => uploader.reset()}>Upload Another File</button>
+				<button onclick={copyLink} class={copied ? 'success-button' : 'outline'}>
+					{copied ? '✅ Copied!' : 'Copy Link'}
+				</button>
 			{/if}
 			<button class="secondary outline" onclick={handleClose}>Close</button>
 		</footer>
