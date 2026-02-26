@@ -31,7 +31,7 @@
 <dialog {open}>
 	<article>
 		<header>
-			<button aria-label="Close" rel="prev" onclick={handleClose}></button>
+			<button aria-label="Close" onclick={handleClose}></button>
 			<p>
 				<strong>
 					{#if uploader.status === 'success' && uploader.result}
@@ -130,7 +130,6 @@
 		flex: 1;
 	}
 
-	.link-group button,
 	.link-group a {
 		margin-bottom: 0;
 		width: auto;
