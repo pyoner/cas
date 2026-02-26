@@ -18,14 +18,7 @@
 <UploadModal bind:open={isModalOpen} {uploader} />
 
 <section id="upload">
-	<Dropzone
-		status="idle"
-		file={null}
-		previewUrl={null}
-		onFileChange={handleFileChange}
-		onReset={() => {}}
-		onUpload={() => {}}
-	/>
+	<Dropzone onFileChange={handleFileChange} />
 </section>
 
 <Features />
