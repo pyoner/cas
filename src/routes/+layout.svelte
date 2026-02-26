@@ -22,13 +22,20 @@
 				<a href="https://github.com/pyoner/cas" target="_blank" rel="noopener noreferrer">GitHub</a>
 			</li>
 			<li style="margin-left: auto;">
-				<button onclick={() => theme.toggle()} aria-label="Toggle theme">
+				<a
+					href="#theme"
+					onclick={(e) => {
+						e.preventDefault();
+						theme.toggle();
+					}}
+					aria-label="Toggle theme"
+				>
 					{#if theme.value === 'light'}
 						☀️
 					{:else}
 						🌙
 					{/if}
-				</button>
+				</a>
 			</li>
 		</ul>
 	</nav>
@@ -55,5 +62,9 @@
 
 	footer {
 		margin-top: auto;
+	}
+
+	nav a[href='#theme'] {
+		text-decoration: none;
 	}
 </style>
