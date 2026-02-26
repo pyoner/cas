@@ -13,8 +13,8 @@
 	<meta name="description" content="Secure and Fast File Storage Built on Cloudflare R2." />
 </svelte:head>
 
-<header class="container">
-	<nav>
+<header>
+	<nav class="container">
 		<ul>
 			<li>
 				<a
@@ -43,12 +43,14 @@
 	{@render children()}
 </main>
 
-<footer class="container">
-	<p>
-		&copy; 2026 <a href="https://github.com/pyoner/cas" target="_blank" rel="noopener noreferrer"
-			>GitHub</a
-		>
-	</p>
+<footer>
+	<div class="container">
+		<p>
+			&copy; 2026 <a href="https://github.com/pyoner/cas" target="_blank" rel="noopener noreferrer"
+				>GitHub</a
+			>
+		</p>
+	</div>
 </footer>
 
 <style>
@@ -58,7 +60,22 @@
 		min-height: 100vh;
 	}
 
+	header {
+		border-bottom: 1px solid var(--pico-muted-border-color);
+		margin-bottom: var(--pico-block-spacing-vertical);
+	}
+
+	main {
+		flex: 1;
+	}
+
 	footer {
-		margin-top: auto;
+		border-top: 1px solid var(--pico-muted-border-color);
+		margin-top: var(--pico-block-spacing-vertical);
+		padding: var(--pico-block-spacing-vertical) 0;
+	}
+
+	footer p {
+		margin-bottom: 0;
 	}
 </style>
