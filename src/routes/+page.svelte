@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createUploader } from '$lib/uploader.svelte';
-	import { Dropzone, SuccessCard, ErrorCard } from '$lib/components';
+	import { Dropzone, SuccessCard, ErrorCard, Features } from '$lib/components';
 
 	const uploader = createUploader();
 </script>
@@ -34,3 +34,5 @@
 		<SuccessCard result={uploader.result} onReset={() => uploader.reset()} />
 	{/if}
 </section>
+
+<Features />
