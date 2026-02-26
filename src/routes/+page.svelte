@@ -2,30 +2,24 @@
 	import { computeHash, MAX_FILE_SIZE } from '$lib/hash';
 	import type { UploadResult, UploadResultWithUrl } from '$lib/types';
 
+	type AppStatus = 'idle' | 'checking' | 'ready' | 'uploading' | 'success' | 'error';
+	let status = $state<AppStatus>('idle');
+
 	let file: File | null = $state(null);
-	let uploading = $state(false);
 	let result: UploadResultWithUrl | null = $state(null);
-	let error = $state<string | null>(null);
-	let fileExists = $state(false);
-	let checking = $state(false);
+	let errorMessage = $state<string | null>(null);
 	let computedHash = $state('');
 
-	// New states
+	// UI states
 	let isDragging = $state(false);
 	let copied = $state(false);
 	let previewUrl: string | null = $state(null);
 
 	async function handleUpload() {
-		if (!file) return;
+		if (!file || status !== 'ready') return;
 
-		if (file.size > MAX_FILE_SIZE) {
-			error = 'File too large. Maximum size is 100MB';
-			return;
-		}
-
-		uploading = true;
-		error = null;
-		result = null;
+		status = 'uploading';
+		errorMessage = null;
 
 		try {
 			const hash = computedHash || (await computeHash(await file.arrayBuffer()));
@@ -43,7 +37,8 @@
 			const data = (await response.json()) as UploadResult;
 
 			if (!response.ok) {
-				error = data.error || 'Upload failed';
+				errorMessage = data.error || 'Upload failed';
+				status = 'error';
 				return;
 			}
 
@@ -51,10 +46,10 @@
 				...data,
 				url: `/api/file?hash=${data.hash}`
 			};
+			status = 'success';
 		} catch {
-			error = 'Upload failed. Please try again.';
-		} finally {
-			uploading = false;
+			errorMessage = 'Upload failed. Please try again.';
+			status = 'error';
 		}
 	}
 
@@ -66,42 +61,47 @@
 
 		file = newFile;
 		result = null;
-		error = null;
-		fileExists = false;
+		errorMessage = null;
 		computedHash = '';
 		copied = false;
 
-		if (file) {
-			if (file.size > MAX_FILE_SIZE) {
-				error = `File too large. Maximum size is ${MAX_FILE_SIZE / 1024 / 1024}MB`;
-				return;
+		if (!file) {
+			status = 'idle';
+			return;
+		}
+
+		if (file.size > MAX_FILE_SIZE) {
+			errorMessage = `File too large. Maximum size is ${MAX_FILE_SIZE / 1024 / 1024}MB`;
+			status = 'error';
+			return;
+		}
+
+		if (file.type.startsWith('image/')) {
+			previewUrl = URL.createObjectURL(file);
+		}
+
+		status = 'checking';
+		const hash = await computeHash(await file.arrayBuffer());
+		computedHash = hash;
+
+		try {
+			const res = await fetch(`/api/file?hash=${hash}`, { method: 'HEAD' });
+			const fileExists = res.ok;
+
+			if (fileExists) {
+				result = {
+					hash,
+					filename: file.name,
+					existing: true,
+					url: `/api/file?hash=${hash}`
+				};
+				status = 'success';
+			} else {
+				status = 'ready';
 			}
-
-			if (file.type.startsWith('image/')) {
-				previewUrl = URL.createObjectURL(file);
-			}
-
-			checking = true;
-			const hash = await computeHash(await file.arrayBuffer());
-			computedHash = hash;
-
-			try {
-				const res = await fetch(`/api/file?hash=${hash}`, { method: 'HEAD' });
-				fileExists = res.ok;
-
-				if (fileExists) {
-					result = {
-						hash,
-						filename: file.name,
-						existing: true,
-						url: `/api/file?hash=${hash}`
-					};
-				}
-			} catch {
-				fileExists = false;
-			} finally {
-				checking = false;
-			}
+		} catch {
+			// If HEAD fails, assume it doesn't exist and let the upload try
+			status = 'ready';
 		}
 	}
 
@@ -112,7 +112,9 @@
 
 	function handleDragOver(e: DragEvent) {
 		e.preventDefault();
-		isDragging = true;
+		if (status === 'idle' || status === 'error') {
+			isDragging = true;
+		}
 	}
 
 	function handleDragLeave() {
@@ -122,7 +124,7 @@
 	async function handleDrop(e: DragEvent) {
 		e.preventDefault();
 		isDragging = false;
-		if (e.dataTransfer?.files?.length) {
+		if ((status === 'idle' || status === 'error') && e.dataTransfer?.files?.length) {
 			await processFile(e.dataTransfer.files[0]);
 		}
 	}
@@ -146,10 +148,10 @@
 		}
 		file = null;
 		result = null;
-		error = null;
-		fileExists = false;
+		errorMessage = null;
 		computedHash = '';
 		copied = false;
+		status = 'idle';
 	}
 </script>
 
@@ -159,8 +161,7 @@
 		<p>Upload files to Cloudflare R2 and get shareable links.</p>
 	</hgroup>
 
-	{#if !result || (result && result.existing === false && !uploading)}
-		<!-- Only show upload form if not finished or if it's an existing file we just checked -->
+	{#if status === 'idle' || status === 'checking' || status === 'ready' || status === 'uploading' || (status === 'error' && !result)}
 		<article
 			class="dropzone {isDragging ? 'dragging' : ''}"
 			ondragover={handleDragOver}
@@ -169,7 +170,7 @@
 			role="region"
 			aria-label="File Upload Dropzone"
 		>
-			{#if !file}
+			{#if status === 'idle' || (status === 'error' && !file)}
 				<div class="drop-content">
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
@@ -191,11 +192,11 @@
 						type="file"
 						onchange={handleFileChange}
 						accept="*/*"
-						aria-invalid={error ? 'true' : undefined}
+						aria-invalid={status === 'error' ? 'true' : undefined}
 						title="File Input"
 					/>
 				</div>
-			{:else}
+			{:else if file}
 				<div class="file-details">
 					{#if previewUrl}
 						<img src={previewUrl} alt="Preview" class="preview-image" />
@@ -223,56 +224,61 @@
 						<small>{(file.size / 1024 / 1024).toFixed(2)} MB</small>
 					</div>
 
-					<button
-						class="outline secondary outline-button"
-						onclick={reset}
-						title="Remove file"
-						aria-label="Remove file"
-					>
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							width="16"
-							height="16"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="2"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"
-							></line></svg
+					{#if status !== 'uploading'}
+						<button
+							class="outline secondary outline-button"
+							onclick={reset}
+							title="Remove file"
+							aria-label="Remove file"
 						>
-					</button>
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								width="16"
+								height="16"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"
+								></line></svg
+							>
+						</button>
+					{/if}
 				</div>
 
-				{#if checking}
+				{#if status === 'checking'}
 					<progress></progress>
-					<small>Checking if file exists...</small>
-				{:else if fileExists}
-					<p class="success-text">✨ File already exists on the server!</p>
+					<small>Checking file...</small>
 				{/if}
 			{/if}
 		</article>
 
-		{#if file}
+		{#if status === 'ready' || status === 'uploading'}
 			<button
 				onclick={handleUpload}
-				disabled={uploading || fileExists || !!error}
-				aria-busy={uploading ? 'true' : 'false'}
+				disabled={status === 'uploading'}
+				aria-busy={status === 'uploading' ? 'true' : 'false'}
 			>
-				{uploading ? 'Uploading...' : fileExists ? 'Already Uploaded' : 'Upload File'}
+				{status === 'uploading' ? 'Uploading...' : 'Upload File'}
 			</button>
 		{/if}
 	{/if}
 
-	{#if error}
+	{#if status === 'error'}
 		<article class="error">
 			<header>Error</header>
-			{error}
+			<p>{errorMessage}</p>
+			{#if !file}
+				<footer>
+					<button class="outline" onclick={reset}>Try Again</button>
+				</footer>
+			{/if}
 		</article>
 	{/if}
 
-	{#if result}
+	{#if status === 'success' && result}
 		<article class="success">
 			<header>
 				{result.existing ? 'File Ready!' : 'Upload Complete!'}
@@ -371,11 +377,6 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-	}
-
-	.success-text {
-		color: var(--pico-ins-color);
-		font-weight: bold;
 	}
 
 	.link-group {
