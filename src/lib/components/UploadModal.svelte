@@ -30,7 +30,11 @@
 <dialog {open}>
 	<article>
 		<header>
-			<button aria-label="Close" onclick={handleClose} disabled={uploader.status === 'uploading'}
+			<button
+				aria-label="Close"
+				class="close"
+				onclick={handleClose}
+				disabled={uploader.status === 'uploading' || uploader.status === 'checking'}
 			></button>
 			<p>
 				<strong>
@@ -136,8 +140,10 @@
 			<button
 				class="secondary outline"
 				onclick={handleClose}
-				disabled={uploader.status === 'uploading'}>Close</button
+				disabled={uploader.status === 'uploading' || uploader.status === 'checking'}
 			>
+				Close
+			</button>
 		</footer>
 	</article>
 </dialog>
