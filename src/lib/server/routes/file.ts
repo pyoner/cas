@@ -11,7 +11,7 @@ export const fileRoutes = (app: typeof platformPlugin) =>
 				'/',
 				async ({ query, platform, status }) => {
 					const hash = query.hash;
-					const existing = await platform?.env.BUCKET.head(hash);
+					const existing = await platform.env.BUCKET.head(hash);
 
 					if (!existing) {
 						return status(404);
@@ -37,7 +37,7 @@ export const fileRoutes = (app: typeof platformPlugin) =>
 				'/',
 				async ({ query, platform, status, redirect }) => {
 					const hash = query.hash;
-					const object = await platform?.env.BUCKET.get(hash);
+					const object = await platform.env.BUCKET.get(hash);
 
 					if (!object) {
 						return status(404, { error: 'File not found' });
@@ -58,7 +58,7 @@ export const fileRoutes = (app: typeof platformPlugin) =>
 						});
 					}
 
-					const r2Url = (platform?.env as { R2_URL?: string }).R2_URL;
+					const r2Url = (platform.env as { R2_URL?: string }).R2_URL;
 					if (!r2Url) {
 						return status(500, { error: 'R2_URL not configured' });
 					}
@@ -80,7 +80,9 @@ export const fileRoutes = (app: typeof platformPlugin) =>
 					const contentType = body.contentType;
 
 					if (file.size > MAX_FILE_SIZE) {
-						return status(400, { error: 'File too large. Maximum size is 100MB' });
+						return status(400, {
+							error: 'File too large. Maximum size is 100MB'
+						});
 					}
 
 					const buffer = await file.arrayBuffer();
