@@ -7,6 +7,7 @@ import { Elysia, t } from 'elysia';
 const app = new Elysia({ prefix: '/api/file' })
 	.derive(({ request }) => {
 		// Type casting request to access the platform object injected in fallback
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		const platform = (request as any).platform as App.Platform;
 		return { platform };
 	})
@@ -117,6 +118,7 @@ const app = new Elysia({ prefix: '/api/file' })
 	);
 
 export const fallback: RequestHandler = ({ request, platform }) => {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	(request as any).platform = platform;
 	return app.handle(request);
 };
