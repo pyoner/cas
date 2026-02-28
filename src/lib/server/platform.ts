@@ -7,7 +7,7 @@ export const platformPlugin = new Elysia({ name: 'context' }).derive(
 	({ request, status }) => {
 		const platform = requestPlatformMap.get(request);
 		if (!platform) {
-			throw status(500, 'Platform context not found');
+			return status(500, 'Platform context not found');
 		}
 		return { platform };
 	}
