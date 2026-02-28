@@ -1,14 +1,13 @@
 import { dev } from '$app/environment';
 import { computeHash, MAX_FILE_SIZE } from '$lib/hash';
 import type { UploadResult } from '$lib/types';
-import type { RequestHandler } from './$types';
 import { Elysia, t } from 'elysia';
 
-const app = new Elysia({ prefix: '/api/file' })
+export const requestPlatformMap = new WeakMap<Request, App.Platform>();
+
+export const api = new Elysia({ prefix: '/api/file' })
 	.derive(({ request }) => {
-		// Type casting request to access the platform object injected in fallback
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const platform = (request as any).platform as App.Platform;
+		const platform = requestPlatformMap.get(request);
 		return { platform };
 	})
 	.head(
@@ -116,9 +115,3 @@ const app = new Elysia({ prefix: '/api/file' })
 			)
 		}
 	);
-
-export const fallback: RequestHandler = ({ request, platform }) => {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	(request as any).platform = platform;
-	return app.handle(request);
-};
