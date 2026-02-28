@@ -2,9 +2,9 @@ import { dev } from '$app/environment';
 import { computeHash, MAX_FILE_SIZE } from '$lib/hash';
 import type { UploadResult } from '$lib/types';
 import { t } from 'elysia';
-import type { withContext } from '../context';
+import type { platformPlugin } from '../context';
 
-export const fileRoutes = (app: typeof withContext) =>
+export const fileRoutes = (app: typeof platformPlugin) =>
 	app.group('/file', (app) =>
 		app
 			.head(
