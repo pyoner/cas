@@ -1,99 +1,120 @@
-import { json, redirect } from '@sveltejs/kit';
+import { redirect } from '@sveltejs/kit';
 import { dev } from '$app/environment';
 import { computeHash, MAX_FILE_SIZE } from '$lib/hash';
 import type { UploadResult } from '$lib/types';
 import type { RequestHandler } from './$types';
+import { Elysia, t } from 'elysia';
 
-export const HEAD: RequestHandler = async ({ url, platform }) => {
-	const hash = url.searchParams.get('hash');
+const app = new Elysia({ prefix: '/api/file' })
+	.derive(({ request }) => {
+		// Type casting request to access the platform object injected in fallback
+		const platform = (request as any).platform as App.Platform;
+		return { platform };
+	})
+	.head(
+		'/',
+		async ({ query, platform, status }) => {
+			const hash = query.hash;
+			const existing = await platform?.env.BUCKET.head(hash);
 
-	if (!hash) {
-		return json({ error: 'Missing hash parameter' }, { status: 400 });
-	}
+			if (!existing) {
+				return status(404);
+			}
 
-	const existing = await platform?.env.BUCKET.head(hash);
+			const headers = new Headers();
+			headers.set('Content-Type', existing.httpMetadata?.contentType || 'application/octet-stream');
+			headers.set('Content-Length', existing.size.toString());
+			headers.set('X-Filename', existing.customMetadata?.originalFilename || '');
 
-	if (!existing) {
-		return new Response(null, { status: 404 });
-	}
+			return new Response(null, { status: 200, headers });
+		},
+		{
+			query: t.Object({
+				hash: t.String({ error: 'Missing hash parameter' })
+			})
+		}
+	)
+	.get(
+		'/',
+		async ({ query, platform, status }) => {
+			const hash = query.hash;
+			const object = await platform?.env.BUCKET.get(hash);
 
-	const headers = new Headers();
-	headers.set('Content-Type', existing.httpMetadata?.contentType || 'application/octet-stream');
-	headers.set('Content-Length', existing.size.toString());
-	headers.set('X-Filename', existing.customMetadata?.originalFilename || '');
+			if (!object) {
+				return status(404, { error: 'File not found' });
+			}
 
-	return new Response(null, { status: 200, headers });
-};
+			if (dev) {
+				const headers = new Headers();
+				headers.set('Content-Type', object.httpMetadata?.contentType || 'application/octet-stream');
+				headers.set('Content-Length', object.size.toString());
+				headers.set('Cache-Control', 'public, max-age=31536000, immutable');
 
-export const GET: RequestHandler = async ({ url, platform }) => {
-	const hash = url.searchParams.get('hash');
+				return new Response(object.body as unknown as BodyInit, { status: 200, headers });
+			}
 
-	if (!hash) {
-		return json({ error: 'Missing hash parameter' }, { status: 400 });
-	}
+			const r2Url = (platform?.env as { R2_URL?: string }).R2_URL;
+			if (!r2Url) {
+				return status(500, { error: 'R2_URL not configured' });
+			}
 
-	const object = await platform?.env.BUCKET.get(hash);
+			throw redirect(302, `${r2Url}/${hash}`);
+		},
+		{
+			query: t.Object({
+				hash: t.String({ error: 'Missing hash parameter' })
+			})
+		}
+	)
+	.post(
+		'/',
+		async ({ body, platform, status }) => {
+			const file = body.file;
+			const clientHash = body.hash;
+			const filename = body.filename;
+			const contentType = body.contentType;
 
-	if (!object) {
-		return json({ error: 'File not found' }, { status: 404 });
-	}
+			if (file.size > MAX_FILE_SIZE) {
+				return status(400, { error: 'File too large. Maximum size is 100MB' });
+			}
 
-	if (dev) {
-		const headers = new Headers();
-		headers.set('Content-Type', object.httpMetadata?.contentType || 'application/octet-stream');
-		headers.set('Content-Length', object.size.toString());
-		headers.set('Cache-Control', 'public, max-age=31536000, immutable');
+			const buffer = await file.arrayBuffer();
+			const serverHash = await computeHash(buffer);
 
-		return new Response(object.body, { status: 200, headers });
-	}
+			if (clientHash && clientHash !== serverHash) {
+				return status(400, {
+					error: 'Invalid hash: client-side hash does not match server-computed hash'
+				});
+			}
 
-	const r2Url = (platform?.env as { R2_URL?: string }).R2_URL;
-	if (!r2Url) {
-		return json({ error: 'R2_URL not configured' }, { status: 500 });
-	}
+			const hash = serverHash;
+			const existing = await platform?.env.BUCKET.head(hash);
 
-	throw redirect(302, `${r2Url}/${hash}`);
-};
+			if (existing) {
+				return { hash, filename, existing: true } satisfies UploadResult;
+			}
 
-export const POST: RequestHandler = async ({ request, platform }) => {
-	const formData = await request.formData();
+			await platform?.env.BUCKET.put(hash, buffer, {
+				httpMetadata: { contentType },
+				customMetadata: { originalFilename: filename }
+			});
 
-	const file = formData.get('file') as File | null;
-	const clientHash = formData.get('hash') as string | null;
-	const filename = formData.get('filename') as string | null;
-	const contentType = formData.get('contentType') as string | null;
+			return { hash, filename, existing: false } satisfies UploadResult;
+		},
+		{
+			body: t.Object(
+				{
+					file: t.File(),
+					hash: t.Optional(t.String()),
+					filename: t.String(),
+					contentType: t.String()
+				},
+				{ error: 'Missing required fields' }
+			)
+		}
+	);
 
-	if (!file || !filename || !contentType) {
-		return json({ error: 'Missing required fields' }, { status: 400 });
-	}
-
-	if (file.size > MAX_FILE_SIZE) {
-		return json({ error: 'File too large. Maximum size is 100MB' }, { status: 400 });
-	}
-
-	const buffer = await file.arrayBuffer();
-	const serverHash = await computeHash(buffer);
-
-	if (clientHash && clientHash !== serverHash) {
-		return json(
-			{
-				error: 'Invalid hash: client-side hash does not match server-computed hash'
-			},
-			{ status: 400 }
-		);
-	}
-
-	const hash = serverHash;
-	const existing = await platform?.env.BUCKET.head(hash);
-
-	if (existing) {
-		return json({ hash, filename, existing: true } satisfies UploadResult);
-	}
-
-	await platform?.env.BUCKET.put(hash, buffer, {
-		httpMetadata: { contentType },
-		customMetadata: { originalFilename: filename }
-	});
-
-	return json({ hash, filename, existing: false } satisfies UploadResult);
+export const fallback: RequestHandler = ({ request, platform }) => {
+	(request as any).platform = platform;
+	return app.handle(request);
 };
