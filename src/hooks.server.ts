@@ -1,5 +1,6 @@
 import type { Handle } from '@sveltejs/kit';
-import { api, requestPlatformMap } from '$lib/server/api';
+import { api } from '$lib/server/api';
+import { requestPlatformMap } from '$lib/server/context';
 
 export const handle: Handle = async ({ event, resolve }) => {
 	if (event.url.pathname.startsWith('/api')) {
