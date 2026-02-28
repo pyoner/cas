@@ -1,4 +1,3 @@
-import { redirect } from '@sveltejs/kit';
 import { dev } from '$app/environment';
 import { computeHash, MAX_FILE_SIZE } from '$lib/hash';
 import type { UploadResult } from '$lib/types';
@@ -36,7 +35,7 @@ const app = new Elysia({ prefix: '/api/file' })
 	)
 	.get(
 		'/',
-		async ({ query, platform, status }) => {
+		async ({ query, platform, status, redirect }) => {
 			const hash = query.hash;
 			const object = await platform?.env.BUCKET.get(hash);
 
@@ -50,7 +49,10 @@ const app = new Elysia({ prefix: '/api/file' })
 				headers.set('Content-Length', object.size.toString());
 				headers.set('Cache-Control', 'public, max-age=31536000, immutable');
 
-				return new Response(object.body as unknown as BodyInit, { status: 200, headers });
+				return new Response(object.body as unknown as BodyInit, {
+					status: 200,
+					headers
+				});
 			}
 
 			const r2Url = (platform?.env as { R2_URL?: string }).R2_URL;
@@ -58,7 +60,7 @@ const app = new Elysia({ prefix: '/api/file' })
 				return status(500, { error: 'R2_URL not configured' });
 			}
 
-			throw redirect(302, `${r2Url}/${hash}`);
+			throw redirect(`${r2Url}/${hash}`, 302);
 		},
 		{
 			query: t.Object({
