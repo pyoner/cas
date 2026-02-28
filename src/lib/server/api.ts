@@ -2,10 +2,12 @@ import { dev } from '$app/environment';
 import { computeHash, MAX_FILE_SIZE } from '$lib/hash';
 import type { UploadResult } from '$lib/types';
 import { Elysia, t } from 'elysia';
+import { openapi } from '@elysiajs/openapi';
 
 export const requestPlatformMap = new WeakMap<Request, App.Platform>();
 
 export const api = new Elysia({ prefix: '/api/file' })
+	.use(openapi())
 	.derive(({ request }) => {
 		const platform = requestPlatformMap.get(request);
 		return { platform };
