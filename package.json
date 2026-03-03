@@ -42,6 +42,7 @@
 		"@picocss/pico": "^2.1.1",
 		"@sinclair/typebox": "^0.34.48",
 		"elysia": "^1.4.26",
+		"elysia-sveltekit": "1.0.1",
 		"openapi-types": "^12.1.3"
 	}
 }

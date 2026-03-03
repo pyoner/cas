@@ -9,6 +9,7 @@
         "@picocss/pico": "^2.1.1",
         "@sinclair/typebox": "^0.34.48",
         "elysia": "^1.4.26",
+        "elysia-sveltekit": "1.0.1",
         "openapi-types": "^12.1.3",
       },
       "devDependencies": {
@@ -366,6 +367,8 @@
     "devalue": ["devalue@5.6.3", "", {}, "sha512-nc7XjUU/2Lb+SvEFVGcWLiKkzfw8+qHI7zn8WYXKkLMgfGSHbgCEaR6bJpev8Cm6Rmrb19Gfd/tZvGqx9is3wg=="],
 
     "elysia": ["elysia@1.4.26", "", { "dependencies": { "cookie": "^1.1.1", "exact-mirror": "^0.2.7", "fast-decode-uri-component": "^1.0.1", "memoirist": "^0.4.0" }, "peerDependencies": { "@sinclair/typebox": ">= 0.34.0 < 1", "@types/bun": ">= 1.2.0", "file-type": ">= 20.0.0", "openapi-types": ">= 12.0.0", "typescript": ">= 5.0.0" }, "optionalPeers": ["@types/bun", "typescript"] }, "sha512-oGhEFYwt+4M/U9w34XTdBen2KOQIa/PXne40zUkTWRgJlVJNBhepxOdjWeY1U0CbYoEOyZaj1tc79wOsuCxMYw=="],
+
+    "elysia-sveltekit": ["elysia-sveltekit@1.0.1", "", { "peerDependencies": { "@sveltejs/kit": "^2.0.0", "elysia": "^1.2" } }, "sha512-eGPMwr18YzVkFHbk+bXw46ANK599JfpKo7u+frG8ByMfZocH/NY3GyU6TPMheGYmfs0k3bYKrD7fYEq5l7wdlQ=="],
 
     "error-stack-parser-es": ["error-stack-parser-es@1.0.5", "", {}, "sha512-5qucVt2XcuGMcEGgWI7i+yZpmpByQ8J1lHhcL7PwqCwu9FPP3VUXzT4ltHe5i2z9dePwEHcDVOAfSnHsOlCXRA=="],
 
